@@ -1,0 +1,48 @@
+package com.thangoghd.cakeotv.ui.components
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.thangoghd.cakeotv.ui.navigation.Screen
+
+@Composable
+fun NavigationRail(
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+) {
+    val screens = Screen.getScreens()
+    val navBackStackEntry = navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry.value?.destination
+
+    NavigationRail(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.surface
+    ) {
+        screens.forEach { screen ->
+            NavigationRailItem(
+                icon = {
+                    Icon(
+                        imageVector = screen.icon,
+                        contentDescription = screen.label
+                    )
+                },
+                label = { Text(screen.label) },
+                selected = currentDestination?.hierarchy?.any {
+                    it.route == screen.route
+                } == true,
+                onClick = {
+                    navController.navigate(screen.route) {
+                        popUpTo(navController.graph.findStartDestination().id)
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+    }
+}
