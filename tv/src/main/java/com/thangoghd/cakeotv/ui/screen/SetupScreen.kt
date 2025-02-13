@@ -1,8 +1,12 @@
 package com.thangoghd.cakeotv.ui.screen
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -64,14 +68,32 @@ fun SetupScreen(
                         onClick = { viewModel.setUIMode(UIMode.TV) },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Android TV")
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Tv,
+                                contentDescription = "TV Icon"
+                            )
+                            Text("Android TV")
+                        }
                     }
 
                     Button(
                         onClick = { viewModel.setUIMode(UIMode.MOBILE) },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Mobile Phone")
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PhoneAndroid,
+                                contentDescription = "Phone"
+                            )
+                            Text("Mobile Phone")
+                        }
                     }
                 }
 

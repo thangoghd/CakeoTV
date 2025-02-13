@@ -1,6 +1,21 @@
 <resources>
     <string name="app_name">Cakeo TV</string>
 
-    <!--MatchCard's infomations-->
-    <string name="versus">VS</string>
+    <!--Navigation-->
+    <string name="live">Live</string>
+    <string name="highlight">Highlight</string>
+    <string name="replay">Replay</string>
+    <string name="settings">Settings</string>
+
+    <!--Setting screen-->
+    <string name="interface_mode">Interface Mode</string>
+    <string name="android_tv">Android TV</string>
+    <string name="phone">Mobile Phone</string>
+    <string name="theme">Theme</string>
+    <string name="use_system_theme">Use System Theme</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="app_infomations">App Infomations</string>
+    <string name="version">Version</string>
+    <string name="build">Build</string>
+
 </resources>

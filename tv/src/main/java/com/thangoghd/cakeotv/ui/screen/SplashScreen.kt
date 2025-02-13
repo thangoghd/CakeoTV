@@ -14,12 +14,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.thangoghd.cakeotv.R
+import com.thangoghd.cakeotv.ui.theme.lexendFontFamily
 import com.thangoghd.cakeotv.ui.theme.mainColor
 import com.thangoghd.cakeotv.ui.viewmodel.SplashViewModel
 
@@ -57,9 +59,13 @@ fun SplashScreen(
 
             Text(
                 text = buildAnnotatedString {
-                    append("Bóng đá xoá đói giảm nghèo\nVào xem ngay tại ")
+                    withStyle(style = androidx.compose.ui.text.SpanStyle(fontFamily = lexendFontFamily)) {
+                        append("Bóng đá xoá đói giảm nghèo\nVào xem ngay tại ")
+                    }
                     withStyle(style = androidx.compose.ui.text.SpanStyle(color = mainColor)) {
-                        append("CakeoTV")
+                        withStyle(style = androidx.compose.ui.text.SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("CakeoTV")
+                        }
                     }
                 },
                 fontSize = 16.sp,

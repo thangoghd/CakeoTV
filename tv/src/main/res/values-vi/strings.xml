@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cakeo TV</string>
+
+    <!--Navigation-->
+    <string name="live">Trực tiếp</string>
+    <string name="highlight">Highlight</string>
+    <string name="replay">Xem lại</string>
+    <string name="settings">Cài đặt</string>
+
+    <!--Setting screen-->
+    <string name="interface_mode">Giao diện ứng dụng</string>
+    <string name="android_tv">Android TV</string>
+    <string name="phone">Điện thoại</string>
+    <string name="theme">Giao diện</string>
+    <string name="use_system_theme">Sử dụng giao diện hệ thống</string>
+    <string name="dark_mode">Chế độ tối</string>
+    <string name="app_infomations">Thông tin ứng dụng</string>
+    <string name="version">Phiên bản</string>
+    <string name="build">Build</string>
+</resources>

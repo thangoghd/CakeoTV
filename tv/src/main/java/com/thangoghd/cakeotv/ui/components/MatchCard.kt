@@ -46,7 +46,7 @@ fun MatchCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .height(160.dp)
             .padding(4.dp)
             .scale(scale)
             .clip(shape)
