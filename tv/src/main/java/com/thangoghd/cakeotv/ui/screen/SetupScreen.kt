@@ -14,10 +14,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.thangoghd.cakeotv.R
 import com.thangoghd.cakeotv.ui.model.UIMode
 import com.thangoghd.cakeotv.ui.viewmodel.MainViewModel
 
@@ -49,13 +51,13 @@ fun SetupScreen(
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Text(
-                    text = "Welcome to CakeoTV",
+                    text = stringResource(R.string.welcome),
                     fontSize = 24.sp,
                     textAlign = TextAlign.Center
                 )
 
                 Text(
-                    text = "Please select your preferred interface:",
+                    text = stringResource(R.string.setup_first),
                     fontSize = 18.sp,
                     textAlign = TextAlign.Center
                 )
@@ -76,7 +78,7 @@ fun SetupScreen(
                                 imageVector = Icons.Default.Tv,
                                 contentDescription = "TV Icon"
                             )
-                            Text("Android TV")
+                            Text(text = stringResource(id = R.string.android_tv))
                         }
                     }
 
@@ -92,7 +94,7 @@ fun SetupScreen(
                                 imageVector = Icons.Default.PhoneAndroid,
                                 contentDescription = "Phone"
                             )
-                            Text("Mobile Phone")
+                            Text(text = stringResource(id = R.string.phone))
                         }
                     }
                 }

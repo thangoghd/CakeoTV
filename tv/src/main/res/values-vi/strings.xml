@@ -2,6 +2,9 @@
 <resources>
     <string name="app_name">Cakeo TV</string>
 
+    <string name="welcome">Chào mừng đến CakeoTV</string>
+    <string name="setup_first">Vui lòng chọn giao diện phù hợp thiết bị của bạn</string>
+
     <!--Navigation-->
     <string name="live">Trực tiếp</string>
     <string name="highlight">Highlight</string>
@@ -16,6 +19,11 @@
     <string name="use_system_theme">Sử dụng giao diện hệ thống</string>
     <string name="dark_mode">Chế độ tối</string>
     <string name="app_infomations">Thông tin ứng dụng</string>
+    <string name="background_playback">Phát trong nền</string>
+    <string name="picture_in_picture">Thu nhỏ trình phát</string>
+    <string name="playback_settings">Cài đặt trình phát</string>
+    <string name="quality_selection">Chọn luồng phát</string>
+    <string name="current_quality">Luồng phát hiện tại</string>
     <string name="version">Phiên bản</string>
     <string name="build">Build</string>
 </resources>

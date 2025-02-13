@@ -144,6 +144,47 @@ fun SettingsScreen(
                 }
             }
         }
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.playback_settings),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+
+                    // Background Playback Switch
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = stringResource(R.string.background_playback))
+                        Switch(
+                            checked = uiState.isBackgroundPlaybackEnabled,
+                            onCheckedChange = { viewModel.setBackgroundPlayback(it) }
+                        )
+                    }
+
+                    // Picture in Picture Switch
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = stringResource(R.string.picture_in_picture))
+                        Switch(
+                            checked = uiState.isPictureInPictureEnabled,
+                            onCheckedChange = { viewModel.setPictureInPicture(it) }
+                        )
+                    }
+                }
+            }
+        }
 
         // App Information Section
         item {

@@ -75,6 +75,7 @@ dependencies {
     // Hilt
     implementation("com.google.dagger:hilt-android:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    implementation(libs.androidx.constraintlayout)
     kapt("com.google.dagger:hilt-android-compiler:2.51.1")
 
     // Retrofit
@@ -91,7 +92,15 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
 
+    // ExoPlayer (Media3)
+    implementation("androidx.media3:media3-exoplayer:1.4.1")
+    implementation("androidx.media3:media3-ui:1.4.1")
+    implementation("androidx.media3:media3-exoplayer-hls:1.4.1")
+    implementation("androidx.media3:media3-session:1.4.1")
+    implementation("androidx.media3:media3-datasource-okhttp:1.4.1")
+
     implementation("io.coil-kt:coil-compose:2.2.2")
+    implementation ("androidx.recyclerview:recyclerview:1.2.1")
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)

@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">Cakeo TV</string>
 
+    <string name="welcome">Welcome to CakeoTV</string>
+    <string name="setup_first">Please select your preferred interface</string>
+
     <!--Navigation-->
     <string name="live">Live</string>
     <string name="highlight">Highlight</string>
@@ -15,7 +18,13 @@
     <string name="use_system_theme">Use System Theme</string>
     <string name="dark_mode">Dark Mode</string>
     <string name="app_infomations">App Infomations</string>
+    <string name="background_playback">Background Playback</string>
+    <string name="picture_in_picture">Picture in Picture</string>
+    <string name="playback_settings">Playback Settings</string>
+    <string name="quality_selection">Quality Selection</string>
+    <string name="current_quality">Current Quality</string>
     <string name="version">Version</string>
     <string name="build">Build</string>
+
 
 </resources>

@@ -11,7 +11,7 @@ data class Match(
     val home: Team,
     val away: Team,
     val thumbnails: String?,
-    val fansites: List<Fansite>,
+    val fansites: List<FansiteMatch>,
     val tournament: Tournament,
     val scores: Scores,
     @SerializedName("match_status")

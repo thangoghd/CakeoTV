@@ -2,9 +2,11 @@ package com.thangoghd.cakeotv.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LiveTv
+import androidx.compose.material.icons.filled.OndemandVideo
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -23,13 +25,13 @@ sealed class Screen(
     
     object Highlight : Screen(
         route = "highlight",
-        icon = Icons.Default.Star,
+        icon = Icons.Default.OndemandVideo,
         labelResId = R.string.highlight
     )
     
     object Replay : Screen(
         route = "replay",
-        icon = Icons.Default.Replay,
+        icon = Icons.Default.VideoLibrary,
         labelResId = R.string.replay
     )
     

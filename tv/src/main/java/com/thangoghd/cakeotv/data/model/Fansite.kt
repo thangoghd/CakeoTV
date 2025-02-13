@@ -2,13 +2,11 @@ package com.thangoghd.cakeotv.data.model
 
 import com.google.gson.annotations.SerializedName
 
-data class Fansite(
+data class FansiteMatch(
     @SerializedName("model_id")
     val modelId: String,
     val name: String,
     val blv: List<BLV>,
-    @SerializedName("play_urls")
-    val playUrls: List<PlayUrl>
 )
 
 data class BLV(

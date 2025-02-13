@@ -25,14 +25,27 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
-                preferencesRepository.getUIMode().collect { mode ->
-                    _uiState.update { 
-                        it.copy(
-                            uiMode = mode,
-                            isFirstLaunch = preferencesRepository.isFirstLaunch(),
-                            isLoading = false
-                        )
+                launch {
+                    preferencesRepository.getUIMode().collect { mode ->
+                        _uiState.update { it.copy(uiMode = mode) }
                     }
+                }
+                launch {
+                    preferencesRepository.getBackgroundPlayback().collect { enabled ->
+                        _uiState.update { it.copy(isBackgroundPlaybackEnabled = enabled) }
+                    }
+                }
+                launch {
+                    preferencesRepository.getPictureInPicture().collect { enabled ->
+                        _uiState.update { it.copy(isPictureInPictureEnabled = enabled) }
+                    }
+                }
+
+                _uiState.update {
+                    it.copy(
+                        isFirstLaunch = preferencesRepository.isFirstLaunch(),
+                        isLoading = false
+                    )
                 }
             } catch (e: Exception) {
                 _uiState.update { 
@@ -69,6 +82,28 @@ class MainViewModel @Inject constructor(
                 _uiState.update { 
                     it.copy(isFirstLaunch = isFirst)
                 }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message) }
+            }
+        }
+    }
+
+    fun setBackgroundPlayback(enabled: Boolean) {
+        viewModelScope.launch {
+            try {
+                preferencesRepository.setBackgroundPlayback(enabled)
+                _uiState.update { it.copy(isBackgroundPlaybackEnabled = enabled) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message) }
+            }
+        }
+    }
+
+    fun setPictureInPicture(enabled: Boolean) {
+        viewModelScope.launch {
+            try {
+                preferencesRepository.setPictureInPicture(enabled)
+                _uiState.update { it.copy(isPictureInPictureEnabled = enabled) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             }
