@@ -86,10 +86,10 @@ class PreferencesRepository @Inject constructor(
     }
 
     fun getBackgroundPlayback(): Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[booleanPreferencesKey(PREF_BACKGROUND_PLAYBACK)] ?: true
+        preferences[booleanPreferencesKey(PREF_BACKGROUND_PLAYBACK)] ?: false
     }
 
     fun getPictureInPicture(): Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[booleanPreferencesKey(PREF_PICTURE_IN_PICTURE)] ?: true
+        preferences[booleanPreferencesKey(PREF_PICTURE_IN_PICTURE)] ?: false
     }
 }

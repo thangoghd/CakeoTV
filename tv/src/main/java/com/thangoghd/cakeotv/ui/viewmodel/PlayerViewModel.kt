@@ -2,6 +2,7 @@ package com.thangoghd.cakeotv.ui.viewmodel
 
 import android.content.ComponentName
 import android.content.Context
+import android.os.Looper
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
@@ -18,6 +19,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import android.util.Log
+import androidx.core.os.HandlerCompat
+import com.google.common.util.concurrent.MoreExecutors
+import java.util.concurrent.Executor
 import javax.inject.Inject
 
 data class PlayerUiState(
@@ -27,7 +32,9 @@ data class PlayerUiState(
     val availableQualities: List<PlayUrl> = emptyList(),
     val isBackgroundPlaybackEnabled: Boolean = false,
     val isPictureInPictureEnabled: Boolean = false,
-    val player: Player? = null
+    val player: Player? = null,
+    val currentPosition: Long = 0,
+    val isPlaying: Boolean = false
 )
 
 @HiltViewModel
@@ -40,12 +47,16 @@ class PlayerViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(PlayerUiState())
     val uiState: StateFlow<PlayerUiState> = _uiState.asStateFlow()
 
+    private var retryCount = 0
+    private val maxRetries = 3
+    private val retryDelayMs = 1000L // 1 second delay between retries
+
     init {
         viewModelScope.launch {
             preferencesRepository.getBackgroundPlayback().collect { enabled ->
                 _uiState.update { it.copy(isBackgroundPlaybackEnabled = enabled) }
                 if (enabled) {
-                    initializeMediaSession()
+                    initializeMediaSession(context)
                 }
             }
         }
@@ -56,16 +67,40 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    private fun initializeMediaSession() {
-        val sessionToken = SessionToken(context, ComponentName(context, MediaPlaybackService::class.java))
-        val controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
-        controllerFuture.addListener(
-            {
-                val controller = controllerFuture.get()
-                _uiState.update { it.copy(player = controller) }
-            },
-            { it.run() }
-        )
+    private fun initializeMediaSession(context: Context) {
+        Log.d("MediaPlaybackPlayerViewModel", "Initializing media session (attempt ${retryCount + 1}/$maxRetries)")
+        try {
+            val sessionToken = SessionToken(context, ComponentName(context, MediaPlaybackService::class.java))
+            val controllerFuture = MediaController.Builder(context, sessionToken)
+                .setApplicationLooper(Looper.getMainLooper())
+                .buildAsync()
+
+            controllerFuture.addListener({
+                try {
+                    val controller = controllerFuture.get()
+                    _uiState.update { it.copy(player = controller) }
+                    Log.d("MediaPlaybackPlayerViewModel", "Media controller connected successfully")
+                    // Reset retry count on success
+                    retryCount = 0
+                } catch (e: Exception) {
+                    Log.e("MediaPlaybackPlayerViewModel", "Failed to get media controller", e)
+                    if (retryCount < maxRetries) {
+                        retryCount++
+                        // Schedule retry after delay
+                        HandlerCompat.createAsync(Looper.getMainLooper()).postDelayed({
+                            initializeMediaSession(context)
+                        }, retryDelayMs)
+                    } else {
+                        Log.e("MediaPlaybackPlayerViewModel", "Failed to initialize media session after $maxRetries attempts")
+                        _uiState.update { it.copy(error = "Failed to initialize media playback. Please try again.") }
+                        retryCount = 0
+                    }
+                }
+            }, MoreExecutors.directExecutor())
+        } catch (e: Exception) {
+            Log.e("MediaPlaybackPlayerViewModel", "Failed to initialize media session", e)
+            _uiState.update { it.copy(error = "Failed to initialize media playback: ${e.message}") }
+        }
     }
 
     fun loadMatch(matchId: String) {
@@ -130,5 +165,27 @@ class PlayerViewModel @Inject constructor(
         
         // If no HD streams found, return the first available stream
         return playUrls.first()
+    }
+
+    fun updatePlaybackState(position: Long, isPlaying: Boolean) {
+        _uiState.update { 
+            it.copy(
+                currentPosition = position,
+                isPlaying = isPlaying
+            )
+        }
+    }
+
+    fun stopAndReleasePlayer() {
+        _uiState.value.player?.run {
+            stop()
+            release()
+        }
+        _uiState.update { it.copy(player = null) }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopAndReleasePlayer()
     }
 }

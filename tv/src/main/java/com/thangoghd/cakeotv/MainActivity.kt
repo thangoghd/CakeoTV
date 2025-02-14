@@ -23,11 +23,30 @@ import com.thangoghd.cakeotv.ui.viewmodel.MainViewModel
 import com.thangoghd.cakeotv.ui.viewmodel.SplashViewModel
 import com.thangoghd.cakeotv.ui.viewmodel.ThemeViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import android.app.AlertDialog
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                AlertDialog.Builder(this@MainActivity)
+                    .setTitle("Xác nhận thoát")
+                    .setMessage("Bạn có muốn thoát ứng dụng không?")
+                    .setPositiveButton("Có") { _, _ ->
+                        finish()
+                    }
+                    .setNegativeButton("Không") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
+            }
+        })
+
         setContent {
             val viewModel: MainViewModel = hiltViewModel()
             val splashViewModel: SplashViewModel = hiltViewModel()

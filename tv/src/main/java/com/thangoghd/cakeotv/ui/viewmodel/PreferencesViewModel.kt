@@ -11,18 +11,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class UIPreferencesState(
+data class PreferencesState(
     val uiMode: UIMode = UIMode.TV,
     val isFirstLaunch: Boolean = true
 )
 
 @HiltViewModel
-class UIPreferencesViewModel @Inject constructor(
+class PreferencesViewModel @Inject constructor(
     private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(UIPreferencesState())
-    val uiState: StateFlow<UIPreferencesState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(PreferencesState())
+    val uiState: StateFlow<PreferencesState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {

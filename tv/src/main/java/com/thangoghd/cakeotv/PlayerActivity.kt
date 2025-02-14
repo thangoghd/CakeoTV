@@ -7,6 +7,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.util.Rational
 import android.view.KeyEvent
 import android.view.WindowManager
@@ -121,7 +124,11 @@ class PlayerActivity : ComponentActivity() {
         player = PlayerUtils.createTrustAllExoPlayer(this).also { exoPlayer ->
             playerView?.player = exoPlayer
             exoPlayer.playWhenReady = playWhenReady
-            exoPlayer.seekTo(currentItem, playbackPosition)
+            
+            // Restore playback position if same URL
+            if (playUrl.url == viewModel.uiState.value.selectedUrl?.url) {
+                exoPlayer.seekTo(viewModel.uiState.value.currentPosition)
+            }
             
             val mediaItem = MediaItem.fromUri(playUrl.url)
             exoPlayer.setMediaItem(mediaItem)
@@ -130,22 +137,40 @@ class PlayerActivity : ComponentActivity() {
             // Set up player listeners
             exoPlayer.addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(playbackState: Int) {
-                    if (playbackState == Player.STATE_READY && viewModel.uiState.value.isBackgroundPlaybackEnabled) {
-                        // Start service only when playback is ready and background playback is enabled
-                        val intent = Intent(this@PlayerActivity, MediaPlaybackService::class.java)
-                        startForegroundService(intent)
-                        MediaPlaybackService.player = exoPlayer
+                    Log.d("MediaPlaybackPlayerActivity", "PlaybackState changed to: $playbackState")
+                    if (playbackState == Player.STATE_READY) {
+                        // Update ViewModel state
+                        viewModel.updatePlaybackState(
+                            exoPlayer.currentPosition,
+                            exoPlayer.isPlaying
+                        )
+                        
+                        // Start service và set player
+                        if (viewModel.uiState.value.isBackgroundPlaybackEnabled) {
+                            Log.d("MediaPlaybackPlayerActivity", "Starting service and setting player")
+                            startServiceAndSetPlayer()
+                        }
                     }
                 }
 
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    if (!viewModel.uiState.value.isBackgroundPlaybackEnabled) {
-                        // Stop service when background playback is disabled
-                        stopService(Intent(this@PlayerActivity, MediaPlaybackService::class.java))
-                    }
+                    Log.d("MediaPlaybackPlayerActivity", "IsPlaying changed to: $isPlaying")
+                    viewModel.updatePlaybackState(
+                        exoPlayer.currentPosition,
+                        isPlaying
+                    )
                 }
             })
         }
+    }
+
+    private fun startServiceAndSetPlayer() {
+        Log.d("MediaPlaybackPlayerActivity", "Starting service and setting player")
+        val serviceIntent = Intent(this, MediaPlaybackService::class.java).apply {
+            putExtra("background_playback", viewModel.uiState.value.isBackgroundPlaybackEnabled)
+        }
+        startService(serviceIntent)
+        MediaPlaybackService.player = player
     }
 
     private fun releasePlayer() {
@@ -153,14 +178,11 @@ class PlayerActivity : ComponentActivity() {
             playbackPosition = exoPlayer.currentPosition
             currentItem = exoPlayer.currentMediaItemIndex
             playWhenReady = exoPlayer.playWhenReady
+            exoPlayer.stop()
             exoPlayer.release()
         }
         player = null
-
-        // Stop service if it's running
-        if (viewModel.uiState.value.isBackgroundPlaybackEnabled) {
-            stopService(Intent(this, MediaPlaybackService::class.java))
-        }
+        playerView?.player = null
     }
 
     override fun onStart() {
@@ -181,6 +203,7 @@ class PlayerActivity : ComponentActivity() {
         super.onPause()
         if (!viewModel.uiState.value.isBackgroundPlaybackEnabled) {
             releasePlayer()
+            viewModel.stopAndReleasePlayer()
         }
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
@@ -189,6 +212,7 @@ class PlayerActivity : ComponentActivity() {
         super.onStop()
         if (!viewModel.uiState.value.isBackgroundPlaybackEnabled) {
             releasePlayer()
+            viewModel.stopAndReleasePlayer()
         }
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
@@ -215,6 +239,18 @@ class PlayerActivity : ComponentActivity() {
         return PictureInPictureParams.Builder()
             .setAspectRatio(Rational(16, 9))
             .build()
+    }
+
+    override fun onBackPressed() {
+        releasePlayer()
+        viewModel.stopAndReleasePlayer()
+        super.onBackPressed()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        releasePlayer()
+        viewModel.stopAndReleasePlayer()
     }
 
     companion object {
