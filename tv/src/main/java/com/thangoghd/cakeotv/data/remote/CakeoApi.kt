@@ -1,5 +1,6 @@
 package com.thangoghd.cakeotv.data.remote
 
+import com.thangoghd.cakeotv.data.AppConstant
 import com.thangoghd.cakeotv.data.model.ApiResponse
 import com.thangoghd.cakeotv.data.model.Match
 import com.thangoghd.cakeotv.data.model.MetaResponse
@@ -8,7 +9,7 @@ import retrofit2.http.Path
 
 interface CakeoApi {
     companion object {
-        const val BASE_URL = "https://api.cakeo.xyz/"
+        const val BASE_URL = AppConstant.BASE_URL
     }
 
     @GET("match/live")

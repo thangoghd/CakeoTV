@@ -8,6 +8,7 @@ import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import com.thangoghd.cakeotv.data.AppConstant
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.security.cert.X509Certificate
@@ -38,8 +39,8 @@ object PlayerUtils {
                     .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
                     .header("Accept-Language", "vi-VN,vi;q=0.8,en-US;q=0.5,en;q=0.3")
                     .header("Connection", "keep-alive")
-                    .header("Referer", "https://vebotv.tv")
-                    .header("Origin", "https://vebotv.tv")
+                    .header("Referer", AppConstant.REFERER_HEADER)
+                    .header("Origin", AppConstant.REFERER_HEADER)
                     .method(original.method, original.body)
                 chain.proceed(requestBuilder.build())
             }
@@ -51,8 +52,8 @@ object PlayerUtils {
                 "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
                 "Accept-Language" to "vi-VN,vi;q=0.8,en-US;q=0.5,en;q=0.3",
                 "Connection" to "keep-alive",
-                "Referer" to "https://vebotv.tv",
-                "Origin" to "https://vebotv.tv"
+                "Referer" to AppConstant.REFERER_HEADER,
+                "Origin" to AppConstant.REFERER_HEADER
             ))
 
         return ExoPlayer.Builder(context)

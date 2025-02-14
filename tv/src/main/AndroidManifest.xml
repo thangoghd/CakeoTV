@@ -11,6 +11,7 @@
         android:name="android.software.leanback"
         android:required="false" />
 
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:name=".CakeoApp"
         android:allowBackup="true"

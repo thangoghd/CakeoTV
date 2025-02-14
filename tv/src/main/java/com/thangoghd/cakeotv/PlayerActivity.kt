@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Rational
 import android.view.KeyEvent
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -145,6 +146,7 @@ class PlayerActivity : ComponentActivity() {
         if (viewModel.uiState.value.isPictureInPictureEnabled) {
             player?.play()
         }
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     override fun onPause() {
@@ -152,6 +154,7 @@ class PlayerActivity : ComponentActivity() {
         if (!viewModel.uiState.value.isBackgroundPlaybackEnabled) {
             releasePlayer()
         }
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     override fun onStop() {
@@ -159,6 +162,7 @@ class PlayerActivity : ComponentActivity() {
         if (!viewModel.uiState.value.isBackgroundPlaybackEnabled) {
             releasePlayer()
         }
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     private fun hideSystemUi() {

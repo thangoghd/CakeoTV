@@ -16,7 +16,7 @@ import com.thangoghd.cakeotv.ui.components.BottomBar
 import com.thangoghd.cakeotv.ui.components.NavigationRail
 import com.thangoghd.cakeotv.ui.components.ResponsiveLayout
 import com.thangoghd.cakeotv.ui.model.UIMode
-import com.thangoghd.cakeotv.ui.navigation.Screen
+import com.thangoghd.cakeotv.ui.components.Screen
 import com.thangoghd.cakeotv.ui.screen.*
 import com.thangoghd.cakeotv.ui.theme.CakeoTVTheme
 import com.thangoghd.cakeotv.ui.viewmodel.MainViewModel

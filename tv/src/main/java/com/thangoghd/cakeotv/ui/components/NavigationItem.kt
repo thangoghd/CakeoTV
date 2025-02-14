@@ -1,11 +1,9 @@
-package com.thangoghd.cakeotv.ui.navigation
+package com.thangoghd.cakeotv.ui.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.OndemandVideo
-import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
