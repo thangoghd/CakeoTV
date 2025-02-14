@@ -26,5 +26,6 @@
     <string name="version">Version</string>
     <string name="build">Build</string>
 
-
+    <string name="media_playback_channel_name">Media Playback</string>
+    <string name="media_playback_channel_description">Controls media playback when app is in background</string>
 </resources>

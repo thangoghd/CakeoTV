@@ -20,10 +20,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.recyclerview.widget.RecyclerView
 import com.thangoghd.cakeotv.data.model.PlayUrl
+import com.thangoghd.cakeotv.service.MediaPlaybackService
 import com.thangoghd.cakeotv.ui.components.QualityAdapter
 import com.thangoghd.cakeotv.ui.viewmodel.PlayerViewModel
 import com.thangoghd.cakeotv.utils.PlayerUtils
@@ -41,6 +43,7 @@ class PlayerActivity : ComponentActivity() {
     private var qualityDialog: Dialog? = null
     private var qualityAdapter: QualityAdapter? = null
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player)
@@ -111,6 +114,7 @@ class PlayerActivity : ComponentActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun initializePlayer(playUrl: PlayUrl) {
         player?.release()
         
@@ -122,6 +126,25 @@ class PlayerActivity : ComponentActivity() {
             val mediaItem = MediaItem.fromUri(playUrl.url)
             exoPlayer.setMediaItem(mediaItem)
             exoPlayer.prepare()
+
+            // Set up player listeners
+            exoPlayer.addListener(object : Player.Listener {
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    if (playbackState == Player.STATE_READY && viewModel.uiState.value.isBackgroundPlaybackEnabled) {
+                        // Start service only when playback is ready and background playback is enabled
+                        val intent = Intent(this@PlayerActivity, MediaPlaybackService::class.java)
+                        startForegroundService(intent)
+                        MediaPlaybackService.player = exoPlayer
+                    }
+                }
+
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    if (!viewModel.uiState.value.isBackgroundPlaybackEnabled) {
+                        // Stop service when background playback is disabled
+                        stopService(Intent(this@PlayerActivity, MediaPlaybackService::class.java))
+                    }
+                }
+            })
         }
     }
 
@@ -133,6 +156,11 @@ class PlayerActivity : ComponentActivity() {
             exoPlayer.release()
         }
         player = null
+
+        // Stop service if it's running
+        if (viewModel.uiState.value.isBackgroundPlaybackEnabled) {
+            stopService(Intent(this, MediaPlaybackService::class.java))
+        }
     }
 
     override fun onStart() {

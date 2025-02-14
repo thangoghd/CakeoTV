@@ -1,11 +1,18 @@
 package com.thangoghd.cakeotv.ui.viewmodel
 
+import android.content.ComponentName
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.Player
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import com.thangoghd.cakeotv.data.model.PlayUrl
 import com.thangoghd.cakeotv.data.remote.CakeoApi
 import com.thangoghd.cakeotv.data.repository.PreferencesRepository
+import com.thangoghd.cakeotv.service.MediaPlaybackService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,13 +26,15 @@ data class PlayerUiState(
     val selectedUrl: PlayUrl? = null,
     val availableQualities: List<PlayUrl> = emptyList(),
     val isBackgroundPlaybackEnabled: Boolean = false,
-    val isPictureInPictureEnabled: Boolean = false
+    val isPictureInPictureEnabled: Boolean = false,
+    val player: Player? = null
 )
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     private val cakeoApi: CakeoApi,
-    private val preferencesRepository: PreferencesRepository
+    private val preferencesRepository: PreferencesRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlayerUiState())
@@ -35,6 +44,9 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch {
             preferencesRepository.getBackgroundPlayback().collect { enabled ->
                 _uiState.update { it.copy(isBackgroundPlaybackEnabled = enabled) }
+                if (enabled) {
+                    initializeMediaSession()
+                }
             }
         }
         viewModelScope.launch {
@@ -42,6 +54,18 @@ class PlayerViewModel @Inject constructor(
                 _uiState.update { it.copy(isPictureInPictureEnabled = enabled) }
             }
         }
+    }
+
+    private fun initializeMediaSession() {
+        val sessionToken = SessionToken(context, ComponentName(context, MediaPlaybackService::class.java))
+        val controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
+        controllerFuture.addListener(
+            {
+                val controller = controllerFuture.get()
+                _uiState.update { it.copy(player = controller) }
+            },
+            { it.run() }
+        )
     }
 
     fun loadMatch(matchId: String) {

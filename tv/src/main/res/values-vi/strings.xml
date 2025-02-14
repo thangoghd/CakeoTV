@@ -26,4 +26,7 @@
     <string name="current_quality">Luồng phát hiện tại</string>
     <string name="version">Phiên bản</string>
     <string name="build">Build</string>
+
+    <string name="media_playback_channel_name">Phát media</string>
+    <string name="media_playback_channel_description">Điều khiển phát media khi ứng dụng chạy nền</string>
 </resources>
