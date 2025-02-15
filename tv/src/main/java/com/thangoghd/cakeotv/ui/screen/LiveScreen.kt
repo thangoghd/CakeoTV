@@ -5,9 +5,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -21,7 +26,7 @@ import com.thangoghd.cakeotv.ui.model.UIMode
 import com.thangoghd.cakeotv.PlayerActivity
 import com.thangoghd.cakeotv.ui.viewmodel.LiveMatchViewModel
 
-@OptIn(ExperimentalTvMaterial3Api::class)
+@OptIn(ExperimentalTvMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun LiveScreen(
     viewModel: LiveMatchViewModel = hiltViewModel(),
@@ -29,7 +34,9 @@ fun LiveScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val refreshing by viewModel.isRefreshing.collectAsState()
     val context = LocalContext.current
+    val pullRefreshState = rememberPullRefreshState(refreshing, { viewModel.fetchLiveMatches() })
 
     val columns = when (uiMode) {
         UIMode.TV -> GridCells.Fixed(3)
@@ -40,6 +47,13 @@ fun LiveScreen(
         modifier = modifier
             .fillMaxSize()
             .padding(8.dp)
+            .run {
+                if (uiMode == UIMode.MOBILE) {
+                    pullRefresh(pullRefreshState)
+                } else {
+                    this
+                }
+            }
     ) {
         when {
             uiState.isLoading -> {
@@ -72,6 +86,14 @@ fun LiveScreen(
                     }
                 }
             }
+        }
+        
+        if (uiMode == UIMode.MOBILE) {
+            PullRefreshIndicator(
+                refreshing = refreshing,
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
         }
     }
 }

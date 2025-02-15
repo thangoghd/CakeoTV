@@ -63,9 +63,12 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.tv.foundation)
     implementation(libs.androidx.tv.material)
+    implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.material3.android)
+    implementation("androidx.compose.material3:material3:1.0.1")
+    implementation("androidx.compose.material:material:1.6.1")
     implementation(libs.androidx.constraintlayout)
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.7")
@@ -79,7 +82,6 @@ dependencies {
     // Hilt
     implementation("com.google.dagger:hilt-android:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
-
     kapt("com.google.dagger:hilt-android-compiler:2.51.1")
 
     // Retrofit
