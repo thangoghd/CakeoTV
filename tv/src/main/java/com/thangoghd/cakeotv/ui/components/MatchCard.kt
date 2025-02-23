@@ -14,11 +14,13 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.thangoghd.cakeotv.R
 import com.thangoghd.cakeotv.data.model.Match
 import com.thangoghd.cakeotv.ui.theme.mainColor
 import com.thangoghd.cakeotv.ui.theme.timeStrSpan
@@ -100,12 +102,12 @@ fun MatchCard(
                             if (match.status == 1) {
                                 Box(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(2.dp))
+                                        .clip(RoundedCornerShape(20.dp))
                                         .background(Color.Red)
                                         .padding(horizontal = 4.dp, vertical = 2.dp)
                                 ) {
                                     Text(
-                                        text = "LIVE",
+                                        text = stringResource(R.string.live),
                                         color = Color.White,
                                         style = MaterialTheme.typography.bodySmall
                                     )

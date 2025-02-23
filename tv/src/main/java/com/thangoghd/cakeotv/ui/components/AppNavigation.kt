@@ -1,6 +1,5 @@
 package com.thangoghd.cakeotv.ui.components
 
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -8,12 +7,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.thangoghd.cakeotv.ui.viewmodel.LiveMatchViewModel
 import com.thangoghd.cakeotv.ui.viewmodel.NavigationViewModel
 import androidx.compose.animation.core.*
 import androidx.compose.runtime.LaunchedEffect
@@ -23,7 +20,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 @Composable
 fun BottomBar(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navigationViewModel: NavigationViewModel = hiltViewModel()
 ) {
     val screens = Screen.getScreens()
     val navBackStackEntry = navController.currentBackStackEntryAsState()
@@ -33,41 +31,33 @@ fun BottomBar(
         modifier = modifier
     ) {
         screens.forEach { screen ->
-            AddItem(
-                screen = screen,
-                currentDestination = currentDestination,
-                navController = navController
+            val isSelected = currentDestination?.hierarchy?.any {
+                it.route == screen.route
+            } == true
+            NavigationBarItem(
+                label = {
+                    Text(text = screen.getLabel())
+                },
+                icon = {
+                    Icon(
+                        imageVector = screen.icon,
+                        contentDescription = screen.getLabel()
+                    )
+                },
+                selected = isSelected,
+                onClick = {
+                    if (isSelected) {
+                        navigationViewModel.onScreenReselected(screen)
+                    } else {
+                        navController.navigate(screen.route) {
+                            popUpTo(navController.graph.findStartDestination().id)
+                            launchSingleTop = true
+                        }
+                    }
+                }
             )
         }
     }
-}
-
-@Composable
-fun RowScope.AddItem(
-    screen: Screen,
-    currentDestination: NavDestination?,
-    navController: NavHostController
-) {
-    NavigationBarItem(
-        label = {
-            Text(text = screen.getLabel())
-        },
-        icon = {
-            Icon(
-                imageVector = screen.icon,
-                contentDescription = screen.getLabel()
-            )
-        },
-        selected = currentDestination?.hierarchy?.any {
-            it.route == screen.route
-        } == true,
-        onClick = {
-            navController.navigate(screen.route) {
-                popUpTo(navController.graph.findStartDestination().id)
-                launchSingleTop = true
-            }
-        }
-    )
 }
 
 @Composable

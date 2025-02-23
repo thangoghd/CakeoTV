@@ -48,6 +48,7 @@ class MediaPlaybackService : MediaSessionService() {
     lateinit var notificationManager: NotificationManagerCompat
 
     private var isBackgroundPlayback = false
+    private var isInitialized = false
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
@@ -58,17 +59,13 @@ class MediaPlaybackService : MediaSessionService() {
         // Create notification channel first
         createNotificationChannel()
         
-        // Start foreground with an empty notification only if not in background playback
-        if (!isBackgroundPlayback) {
-            val emptyNotification = buildEmptyNotification().build()
-            startForeground(NOTIFICATION_ID, emptyNotification)
-        }
-        
         // Initialize player if it exists
         player?.let { 
             Log.d(TAG, "Player already exists, initializing session from onCreate")
             initializeSession(it)
         }
+        
+        isInitialized = true
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -77,11 +74,23 @@ class MediaPlaybackService : MediaSessionService() {
         
         // Check if this is a background playback request
         intent?.getBooleanExtra("background_playback", false)?.let {
-            isBackgroundPlayback = it
-            Log.d(TAG, "Background playback mode: $it")
+            if (isBackgroundPlayback != it) {
+                isBackgroundPlayback = it
+                Log.d(TAG, "Background playback mode changed to: $it")
+                
+                // Update service state based on background mode
+                if (isBackgroundPlayback) {
+                    // Stop foreground but keep running
+                    stopForeground(STOP_FOREGROUND_DETACH)
+                } else if (isInitialized) {
+                    // Return to foreground with notification
+                    val notification = buildNotification().build()
+                    startForeground(NOTIFICATION_ID, notification)
+                }
+            }
         }
         
-        return START_REDELIVER_INTENT
+        return START_STICKY
     }
 
     @UnstableApi
@@ -115,11 +124,11 @@ class MediaPlaybackService : MediaSessionService() {
                 )
                 .build()
             
-            // Only update notification if not in background playback mode
-            if (!isBackgroundPlayback) {
+            // Only show notification if not in background mode
+            if (!isBackgroundPlayback && isInitialized) {
                 Log.d(TAG, "Updating notification with media session")
                 val notification = buildNotification().build()
-                notificationManager.notify(NOTIFICATION_ID, notification)
+                startForeground(NOTIFICATION_ID, notification)
             }
             
             Log.d(TAG, "MediaSession initialized successfully")
@@ -172,8 +181,20 @@ class MediaPlaybackService : MediaSessionService() {
         notificationManager.createNotificationChannel(channel)
     }
 
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        Log.d(TAG, "onTaskRemoved")
+        // Stop service and remove notification when app is removed from recent apps
+        stopSelf()
+        super.onTaskRemoved(rootIntent)
+    }
+
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
+        isInitialized = false
+        // Remove notification when service is destroyed
+        notificationManager.cancel(NOTIFICATION_ID)
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        
         mediaSession?.run {
             player.release()
             release()

@@ -21,11 +21,12 @@
     <string name="background_playback">Background Playback</string>
     <string name="picture_in_picture">Picture in Picture</string>
     <string name="playback_settings">Playback Settings</string>
-    <string name="quality_selection">Quality Selection</string>
-    <string name="current_quality">Current Quality</string>
+    <string name="not_supported_on_android_tv">Not supported on Android TV</string>
     <string name="version">Version</string>
     <string name="build">Build</string>
 
+    <string name="quality_selection">Quality Selection</string>
+    <string name="current_quality">Current Quality</string>
     <string name="media_playback_channel_name">Media Playback</string>
     <string name="media_playback_channel_description">Controls media playback when app is in background</string>
 </resources>

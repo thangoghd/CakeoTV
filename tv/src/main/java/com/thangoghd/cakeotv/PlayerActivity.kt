@@ -1,6 +1,7 @@
 package com.thangoghd.cakeotv
 
 import android.app.Activity
+import android.app.Application
 import android.app.Dialog
 import android.app.PictureInPictureParams
 import android.content.Intent
@@ -41,10 +42,11 @@ class PlayerActivity : ComponentActivity() {
     private var player: ExoPlayer? = null
     private var playerView: PlayerView? = null
     private var playWhenReady = true
-    private var currentItem = 0
+    private var currentMediaItem: MediaItem? = null
     private var playbackPosition = 0L
     private var qualityDialog: Dialog? = null
     private var qualityAdapter: QualityAdapter? = null
+    private var isActivityResumed = false
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,6 +60,47 @@ class PlayerActivity : ComponentActivity() {
         intent.getStringExtra(EXTRA_MATCH_ID)?.let { matchId ->
             viewModel.loadMatch(matchId)
         }
+
+        // Register activity lifecycle callbacks
+        registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+            override fun onActivityStarted(activity: Activity) {}
+            override fun onActivityResumed(activity: Activity) {}
+            override fun onActivityPaused(activity: Activity) {}
+            override fun onActivityStopped(activity: Activity) {}
+            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+            override fun onActivityDestroyed(activity: Activity) {
+                if (activity is PlayerActivity) {
+                    // Stop service and remove notification when activity is destroyed
+                    stopService(Intent(activity, MediaPlaybackService::class.java))
+                }
+            }
+        })
+
+        application.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+            override fun onActivityStarted(activity: Activity) {}
+            
+            override fun onActivityResumed(activity: Activity) {
+                if (activity == this@PlayerActivity) {
+                    isActivityResumed = true
+                }
+            }
+            
+            override fun onActivityPaused(activity: Activity) {
+                if (activity == this@PlayerActivity) {
+                    isActivityResumed = false
+                }
+            }
+            
+            override fun onActivityStopped(activity: Activity) {}
+            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+            override fun onActivityDestroyed(activity: Activity) {
+                if (activity == this@PlayerActivity) {
+                    application.unregisterActivityLifecycleCallbacks(this)
+                }
+            }
+        })
 
         // Observe UI state
         lifecycleScope.launch {
@@ -171,14 +214,18 @@ class PlayerActivity : ComponentActivity() {
         }
         startService(serviceIntent)
         MediaPlaybackService.player = player
+        
+        // Khởi tạo MediaSession sau khi service đã start
+        if (viewModel.uiState.value.isBackgroundPlaybackEnabled) {
+            viewModel.initializeMediaSessionWithDelay(this)
+        }
     }
 
     private fun releasePlayer() {
         player?.let { exoPlayer ->
             playbackPosition = exoPlayer.currentPosition
-            currentItem = exoPlayer.currentMediaItemIndex
+            currentMediaItem = exoPlayer.currentMediaItem
             playWhenReady = exoPlayer.playWhenReady
-            exoPlayer.stop()
             exoPlayer.release()
         }
         player = null
@@ -200,7 +247,9 @@ class PlayerActivity : ComponentActivity() {
     }
 
     override fun onPause() {
-        super.onPause()
+        if (isActivityResumed) {
+            super.onPause()
+        }
         if (!viewModel.uiState.value.isBackgroundPlaybackEnabled) {
             releasePlayer()
             viewModel.stopAndReleasePlayer()
@@ -249,8 +298,12 @@ class PlayerActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        // Release player and cleanup
         releasePlayer()
-        viewModel.stopAndReleasePlayer()
+        // Stop service if we're not in background mode
+        if (!viewModel.uiState.value.isBackgroundPlaybackEnabled) {
+            stopService(Intent(this, MediaPlaybackService::class.java))
+        }
     }
 
     companion object {

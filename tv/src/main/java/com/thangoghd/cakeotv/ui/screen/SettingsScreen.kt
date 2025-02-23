@@ -169,7 +169,14 @@ fun SettingsScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = stringResource(R.string.background_playback))
+                        Column {
+                            Text(text = stringResource(R.string.background_playback))
+                            Text(
+                                text = stringResource(R.string.not_supported_on_android_tv),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
                         Switch(
                             checked = uiState.isBackgroundPlaybackEnabled,
                             onCheckedChange = { viewModel.setBackgroundPlayback(it) }
@@ -182,7 +189,14 @@ fun SettingsScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = stringResource(R.string.picture_in_picture))
+                        Column {
+                            Text(text = stringResource(R.string.picture_in_picture))
+                            Text(
+                                text = stringResource(R.string.not_supported_on_android_tv),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
                         Switch(
                             checked = uiState.isPictureInPictureEnabled,
                             onCheckedChange = { viewModel.setPictureInPicture(it) }

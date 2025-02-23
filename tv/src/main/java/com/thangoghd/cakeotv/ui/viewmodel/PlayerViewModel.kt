@@ -14,6 +14,7 @@ import com.thangoghd.cakeotv.data.repository.PreferencesRepository
 import com.thangoghd.cakeotv.service.MediaPlaybackService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +25,9 @@ import androidx.core.os.HandlerCompat
 import com.google.common.util.concurrent.MoreExecutors
 import java.util.concurrent.Executor
 import javax.inject.Inject
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 
 data class PlayerUiState(
     val isLoading: Boolean = false,
@@ -41,6 +45,7 @@ data class PlayerUiState(
 class PlayerViewModel @Inject constructor(
     private val cakeoApi: CakeoApi,
     private val preferencesRepository: PreferencesRepository,
+
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -50,13 +55,27 @@ class PlayerViewModel @Inject constructor(
     private var retryCount = 0
     private val maxRetries = 3
     private val retryDelayMs = 1000L // 1 second delay between retries
+    private val TAG = "MediaPlaybackPlayerViewModel"
+
+    private var mediaController: MediaController? = null
 
     init {
+        // Observe app lifecycle
+        ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onStop(owner: LifecycleOwner) {
+                // App went to background
+                if (!uiState.value.isBackgroundPlaybackEnabled) {
+                    // If background playback is not enabled, stop playback
+                    stopAndReleasePlayer()
+                }
+            }
+        })
+
         viewModelScope.launch {
             preferencesRepository.getBackgroundPlayback().collect { enabled ->
                 _uiState.update { it.copy(isBackgroundPlaybackEnabled = enabled) }
                 if (enabled) {
-                    initializeMediaSession(context)
+                    initializeMediaSessionWithDelay(context)
                 }
             }
         }
@@ -67,9 +86,21 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    fun initializeMediaSessionWithDelay(context: Context) {
+        viewModelScope.launch {
+            // Đợi một chút để service khởi động
+            delay(500)
+            initializeMediaSession(context)
+        }
+    }
+
     private fun initializeMediaSession(context: Context) {
-        Log.d("MediaPlaybackPlayerViewModel", "Initializing media session (attempt ${retryCount + 1}/$maxRetries)")
+        Log.d(TAG, "Initializing media session (attempt ${retryCount + 1}/$maxRetries)")
         try {
+            // Release existing controller if any
+            mediaController?.release()
+            mediaController = null
+
             val sessionToken = SessionToken(context, ComponentName(context, MediaPlaybackService::class.java))
             val controllerFuture = MediaController.Builder(context, sessionToken)
                 .setApplicationLooper(Looper.getMainLooper())
@@ -78,27 +109,29 @@ class PlayerViewModel @Inject constructor(
             controllerFuture.addListener({
                 try {
                     val controller = controllerFuture.get()
+                    mediaController = controller
                     _uiState.update { it.copy(player = controller) }
-                    Log.d("MediaPlaybackPlayerViewModel", "Media controller connected successfully")
+                    Log.d(TAG, "Media controller connected successfully")
                     // Reset retry count on success
                     retryCount = 0
                 } catch (e: Exception) {
-                    Log.e("MediaPlaybackPlayerViewModel", "Failed to get media controller", e)
+                    Log.e(TAG, "Failed to get media controller", e)
                     if (retryCount < maxRetries) {
                         retryCount++
                         // Schedule retry after delay
-                        HandlerCompat.createAsync(Looper.getMainLooper()).postDelayed({
+                        viewModelScope.launch {
+                            delay(retryDelayMs)
                             initializeMediaSession(context)
-                        }, retryDelayMs)
+                        }
                     } else {
-                        Log.e("MediaPlaybackPlayerViewModel", "Failed to initialize media session after $maxRetries attempts")
+                        Log.e(TAG, "Failed to initialize media session after $maxRetries attempts")
                         _uiState.update { it.copy(error = "Failed to initialize media playback. Please try again.") }
                         retryCount = 0
                     }
                 }
             }, MoreExecutors.directExecutor())
         } catch (e: Exception) {
-            Log.e("MediaPlaybackPlayerViewModel", "Failed to initialize media session", e)
+            Log.e(TAG, "Failed to initialize media session", e)
             _uiState.update { it.copy(error = "Failed to initialize media playback: ${e.message}") }
         }
     }
@@ -155,14 +188,12 @@ class PlayerViewModel @Inject constructor(
     }
 
     private fun selectBestQualityUrl(playUrls: List<PlayUrl>): PlayUrl? {
+        val fullHDQualityString: String = "FullHD"
+        val hdQualityString: String = "HD"
         if (playUrls.isEmpty()) return null
+        playUrls.find { it.name.contains(fullHDQualityString, ignoreCase = true) }?.let { return it }
+        playUrls.find { it.name.contains(hdQualityString, ignoreCase = true) }?.let { return it }
 
-        // Prioritize Full HD streams
-        playUrls.find { it.name.contains("FullHD", ignoreCase = true) }?.let { return it }
-        
-        // Then look for HD streams
-        playUrls.find { it.name.contains("HD", ignoreCase = true) }?.let { return it }
-        
         // If no HD streams found, return the first available stream
         return playUrls.first()
     }
@@ -177,15 +208,21 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun stopAndReleasePlayer() {
-        _uiState.value.player?.run {
-            stop()
-            release()
+        viewModelScope.launch {
+            try {
+                mediaController?.release()
+                mediaController = null
+                _uiState.update { it.copy(player = null) }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error stopping player", e)
+            }
         }
-        _uiState.update { it.copy(player = null) }
     }
 
     override fun onCleared() {
         super.onCleared()
+        mediaController?.release()
+        mediaController = null
         stopAndReleasePlayer()
     }
 }

@@ -53,6 +53,11 @@ android {
 // Allow references to generated code
 kapt {
     correctErrorTypes = true
+    keepJavacAnnotationProcessors = true
+}
+
+hilt {
+    enableAggregatingTask = true
 }
 
 dependencies {
